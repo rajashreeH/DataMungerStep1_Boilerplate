@@ -34,8 +34,11 @@ public class DataMunger {
 	 */
 
 	public String[] getSplitStrings(String queryString) {
+		
+		queryString=queryString.toLowerCase();
+		String[] splitStringArray=queryString.split("\\s");
 
-		return null;
+		return splitStringArray;
 	}
 
 	/*
@@ -47,8 +50,16 @@ public class DataMunger {
 	 */
 
 	public String getFileName(String queryString) {
-
-		return null;
+		queryString=queryString.toLowerCase();
+		int indexOfFrom= queryString.indexOf("from");
+		int indexOfWhere=queryString.indexOf(".csv");
+		
+		/*if(indexOfWhere==-1) {
+			String fileName=queryString.substring(indexOfFrom+5);
+			return fileName;
+		}*/
+		String fileName=queryString.substring(indexOfFrom+5, indexOfWhere+4);
+		return fileName;
 	}
 
 	/*
@@ -62,8 +73,11 @@ public class DataMunger {
 	 */
 	
 	public String getBaseQuery(String queryString) {
+		
+		int indexofCsv=queryString.lastIndexOf(".csv");
+		String baseQuery=queryString.substring(0, indexofCsv+4);
 
-		return null;
+		return baseQuery;
 	}
 
 	/*
@@ -79,8 +93,13 @@ public class DataMunger {
 	 */
 	
 	public String[] getFields(String queryString) {
+		
+		queryString=queryString.toLowerCase();
+		int indexOfFrom=queryString.indexOf("from");
+		String fileds=queryString.substring(7, indexOfFrom-1);
+		String[] filedsValue=fileds.split(","); 
 
-		return null;
+		return filedsValue;
 	}
 
 	/*
@@ -94,8 +113,29 @@ public class DataMunger {
 	 */
 	
 	public String getConditionsPartQuery(String queryString) {
-
-		return null;
+		
+		queryString=queryString.toLowerCase();
+		int indexOfWhere=queryString.indexOf("where");
+		int indexOfGroupBy=queryString.indexOf("group by");
+		int indexOfOrderBy=queryString.indexOf("order by");
+		
+		if(indexOfWhere==-1) {
+			return null;
+		}
+		else {
+			String query;
+			if(indexOfGroupBy!=-1) {
+				 query=queryString.substring(indexOfWhere+6, indexOfGroupBy-1);
+			}
+			else if(indexOfOrderBy!=-1) {
+				 query=queryString.substring(indexOfWhere+6, indexOfOrderBy-1);
+			}
+			else {
+				 query=queryString.substring(indexOfWhere+6);
+			}
+			return query;
+		}
+		
 	}
 
 	/*
@@ -115,7 +155,12 @@ public class DataMunger {
 
 	public String[] getConditions(String queryString) {
 
-		return null;
+		String query=getConditionsPartQuery(queryString);
+		if(query==null) {
+			return null;
+		}
+		String[] conditions=query.split(" and | or ");
+		return conditions;
 	}
 
 	/*
@@ -131,7 +176,18 @@ public class DataMunger {
 
 	public String[] getLogicalOperators(String queryString) {
 
+		String query=getConditionsPartQuery(queryString);
+		if(query==null) {
 		return null;
+		}
+		String[] queryData=query.split("\\s");
+		String logicalData="";
+		for(int i=0;i<queryData.length;i++) {
+			if(queryData[i].matches("and|or")) {
+				logicalData=logicalData+queryData[i]+" ";
+			}
+		}
+		return logicalData.split("\\s");
 	}
 
 	/*
@@ -144,7 +200,13 @@ public class DataMunger {
 
 	public String[] getOrderByFields(String queryString) {
 
+		int indexOfOrderBy=queryString.indexOf("order by");
+		if(indexOfOrderBy==-1) {
 		return null;
+		}
+		String orderData=queryString.substring(indexOfOrderBy+9);
+		return orderData.split(",");
+		
 	}
 
 	/*
@@ -158,7 +220,12 @@ public class DataMunger {
 
 	public String[] getGroupByFields(String queryString) {
 
+		int indexOfOrderBy=queryString.indexOf("group by");
+		if(indexOfOrderBy==-1) {
 		return null;
+		}
+		String orderData=queryString.substring(indexOfOrderBy+9);
+		return orderData.split(",");
 	}
 
 	/*
@@ -173,7 +240,25 @@ public class DataMunger {
 
 	public String[] getAggregateFunctions(String queryString) {
 
-		return null;
+		String[] fields=getFields(queryString);
+		String aggregateFunction="";
+		for(int i=0;i<fields.length;i++) {
+			if(fields[i].contains("count(")||
+					fields[i].contains("sum(")||
+					fields[i].contains("min(")||
+					fields[i].contains("max(")||
+					fields[i].contains("avg(")
+					) {
+				
+				aggregateFunction=aggregateFunction+fields[i]+" ";
+				
+			}
+		}
+		if(aggregateFunction=="") {
+			return null;
+		}
+		return aggregateFunction.split("\\s");
+	
 	}
 
 }
